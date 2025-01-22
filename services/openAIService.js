@@ -39,14 +39,16 @@ const analyzeCodeWithOpenAI = async (files) => {
       //   max_tokens: 500,
     });
 
-    console.log(response);
+    console.log(response.choices[0].message);
     console.log("-----------------------");
     comments.push({
       path: file.filename,
-      body: response.data.choices[0].text.trim(),
+      body: response.choices[0].message,
       position: 1, // Adjust this to target the correct line number
     });
   }
+
+  console.log("comments: ", comments);
 
   return comments;
 };
