@@ -6,7 +6,7 @@ const analyzeCodeWithOpenAI = async (files) => {
   for (const file of files) {
     // Create a detailed prompt for PR review
     const prompt = `
-  You are a code reviewer. Your task is to review the code in the following file and provide actionable comments to improve its quality. Focus on the following aspects:
+   Your task is to review the code in the following file and provide actionable comments to improve its quality. Focus on the following aspects:
   
   1. Remove unnecessary console logs and commented-out code.
   2. Ensure the code follows the Single Responsibility Principle (SRP).
@@ -27,13 +27,20 @@ const analyzeCodeWithOpenAI = async (files) => {
   Provide a review in the form of actionable comments. Be concise but clear in your suggestions.
       `;
 
-    // Call OpenAI to analyze the file
     const response = await openAIClient.chat.completions.create({
-      model: "gpt-4",
-      prompt: prompt.trim(),
-      max_tokens: 300,
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "assistant", content: "You are a code reviewer." },
+        {
+          role: "user",
+          content: prompt.trim(),
+        },
+      ],
+      max_tokens: 500,
     });
 
+    console.log(response?.data?.choices[0]);
+    console.log("-----------------------");
     comments.push({
       path: file.filename,
       body: response.data.choices[0].text.trim(),
