@@ -1,6 +1,6 @@
 const openAIClient = require("../config/openai");
 
-const analyzeCodeWithOpenAI = async (files) => {
+const analyzeCodeWithOpenAI = async (files, commitId) => {
   const comments = [];
 
   for (const file of files) {
@@ -36,7 +36,8 @@ const analyzeCodeWithOpenAI = async (files) => {
     comments.push({
       path: file.filename,
       body: response.choices[0].message?.content,
-      position: 1, // Adjust this to target the correct line number
+      commit_id: commitId,
+      line: 1, // Adjust this to target the correct line number
     });
   }
 

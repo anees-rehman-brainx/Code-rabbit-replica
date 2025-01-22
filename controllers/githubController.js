@@ -6,9 +6,7 @@ const getOctokit = require("../config/octokit");
 const webhookHandler = async (req, res) => {
   try {
     // Parse GitHub webhook payload
-    const { action, pull_request, repository } = req.body;
-
-    console.log("body", req.body);
+    const { action, pull_request, repository, commits } = req.body;
 
     if (
       action === GITHUB_ACTIONS.OPENED ||
@@ -17,9 +15,17 @@ const webhookHandler = async (req, res) => {
       const owner = repository.owner.login;
       const repo = repository.name;
       const pullNumber = pull_request.number;
+      const commitId = commits[0]?.id;
 
       console.log(
-        "owner: " + owner + "  repo: " + repo + "   pullNumber: " + pullNumber
+        "owner: " +
+          owner +
+          "  repo: " +
+          repo +
+          "   pullNumber: " +
+          pullNumber +
+          "    commit: " +
+          commitId
       );
 
       // Step 1: Fetch PR Files
@@ -31,16 +37,19 @@ const webhookHandler = async (req, res) => {
       );
 
       // Step 2: Analyze Files with OpenAI
-      //   const comments = await openAIService.analyzeCodeWithOpenAI(files);
+      const comments = await openAIService.analyzeCodeWithOpenAI(
+        files,
+        commitId
+      );
 
-      //   console.log("comments", comments);
+      console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
-      //   if (comments && comments?.length) {
-      //     for (const comment of comments) {
-      //       await postCommentOnPR(owner, repo, pullNumber, comment);
-      //     }
-      //   }
+      if (comments && comments?.length) {
+        for (const comment of comments) {
+          await postCommentOnPR(owner, repo, pullNumber, comment);
+        }
+      }
     }
 
     res.status(200).send("Webhook processed");
@@ -80,7 +89,8 @@ const postCommentOnPR = async (
       pull_number: pullRequestNumber,
       body: comment.body,
       path: comment.path,
-      position: comment.position, // Ensure this corresponds to a valid diff position
+      line: comment.line, // Ensure this corresponds to a valid diff position
+      commit_id: comment?.commit_id,
     });
     console.log("Comment posted successfully:", response?.data);
   } catch (error) {
