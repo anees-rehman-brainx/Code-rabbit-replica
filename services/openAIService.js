@@ -37,7 +37,7 @@ const analyzeCodeWithOpenAI = async (files, commitId) => {
       path: file.filename,
       body: response.choices[0].message?.content,
       commit_id: commitId,
-      line: 1, // Adjust this to target the correct line number
+      line: 2, // Adjust this to target the correct line number
     });
   }
 

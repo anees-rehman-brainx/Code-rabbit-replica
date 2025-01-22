@@ -93,6 +93,9 @@ const postCommentOnPR = async (
       path: comment.path,
       line: comment.line, // Ensure this corresponds to a valid diff position
       commit_id: comment?.commit_id,
+      start_line: 1,
+      start_side: "RIGHT",
+      side: "RIGHT",
     });
     console.log("Comment posted successfully:", response?.data);
   } catch (error) {
