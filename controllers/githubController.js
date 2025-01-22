@@ -81,25 +81,38 @@ const postCommentOnPR = async (
   try {
     const octokit = await getOctokit(); // Get the octokit instance
 
-    await octokit.request(
-      "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments",
-      {
-        owner: repoName,
-        repo: repoName,
-        pull_number: pullRequestNumber,
-        body: comment.body,
-        commit_id: commitId,
-        path: comment.path,
-        start_line: 1,
-        start_side: "RIGHT",
-        line: 2,
-        side: "RIGHT",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      }
-    );
-    console.log("Comment posted successfully:", response?.data);
+    // First, create a review
+    const reviewResponse = await octokit.rest.pulls.createReview({
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber,
+      body: "Reviewing the PR, posting automated comments.",
+      event: "REQUEST_CHANGES", // or "APPROVE" or "COMMENT"
+    });
+
+    const reviewId = reviewResponse.data.id;
+
+    console.log("reviewid", reviewId);
+
+    // Now, post a comment on that review
+    const commentResponse = await octokit.rest.pulls.createReviewComment({
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber,
+      review_id: reviewId, // Provide the review_id here
+      body: comment.body,
+      path: comment.path,
+      line: comment.line, // Ensure this corresponds to a valid diff position
+      commit_id: commitId,
+      start_line: 1,
+      start_side: "RIGHT",
+      side: "RIGHT",
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    });
+
+    console.log("Comment posted successfully:", commentResponse?.data);
   } catch (error) {
     console.error("Error posting comment:", error);
   }
