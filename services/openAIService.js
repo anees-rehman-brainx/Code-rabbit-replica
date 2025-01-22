@@ -60,3 +60,7 @@ const extractDiffHunk = (patchContent) => {
 
   return hunks; // Return the list of diff hunks
 };
+
+module.exports = {
+  analyzeCodeWithOpenAI,
+};
