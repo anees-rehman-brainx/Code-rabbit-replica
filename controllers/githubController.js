@@ -8,8 +8,6 @@ const webhookHandler = async (req, res) => {
     // Parse GitHub webhook payload
     const { action, pull_request, repository, after } = req.body;
 
-    console.log("comits", after);
-
     if (
       action === GITHUB_ACTIONS.OPENED ||
       action === GITHUB_ACTIONS.SYNCHRONIZE
@@ -81,7 +79,8 @@ const postCommentOnPR = async (
   try {
     const octokit = await getOctokit(); // Get the octokit instance
 
-    await octokit.request(
+    console.log("comment", comment);
+    const response = await octokit.request(
       `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
       {
         owner: repoOwner,
@@ -90,16 +89,19 @@ const postCommentOnPR = async (
         body: comment.body,
         commit_id: commitId,
         path: comment.path,
-        start_line: 1,
+        diff_hunk: comment.diff_hunk, // Add the diff_hunk field here
+        start_line: comment.start_line,
         start_side: "RIGHT",
-        line: 2,
+        line: comment.line,
         side: "RIGHT",
         headers: {
           "X-GitHub-Api-Version": "2022-11-28",
         },
       }
     );
-    console.log("Comment posted successfully:", response?.data);
+
+    console.log("---------------------------------");
+    console.log("Comment posted successfully:", response);
   } catch (error) {
     console.error("Error posting comment:", error);
   }
