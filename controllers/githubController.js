@@ -82,7 +82,7 @@ const postCommentOnPR = async (
     const octokit = await getOctokit(); // Get the octokit instance
 
     await octokit.request(
-      `POST /repos/${repoOwner}/${repoName}/pulls/${pullRequestNumber}/comments`,
+      `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
       {
         owner: repoOwner,
         repo: repoName,
