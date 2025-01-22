@@ -96,6 +96,9 @@ const postCommentOnPR = async (
       start_line: 1,
       start_side: "RIGHT",
       side: "RIGHT",
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
     });
     console.log("Comment posted successfully:", response?.data);
   } catch (error) {
