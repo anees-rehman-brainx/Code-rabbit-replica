@@ -8,10 +8,7 @@ const webhookHandler = async (req, res) => {
     // Parse GitHub webhook payload
     const { action, pull_request, repository, after } = req.body;
 
-    console.log(req.body);
-
     console.log("comits", after);
-    return;
 
     if (
       action === GITHUB_ACTIONS.OPENED ||
@@ -43,8 +40,6 @@ const webhookHandler = async (req, res) => {
 
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
-
-      console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
@@ -104,21 +99,6 @@ const postCommentOnPR = async (
         },
       }
     );
-    // const response = await octokit.rest.pulls.createReviewComment({
-    //   owner: repoOwner,
-    //   repo: repoName,
-    //   pull_number: pullRequestNumber,
-    //   body: comment.body,
-    //   path: comment.path,
-    //   commit_id: comment?.commit_id,
-    //   start_line: 1,
-    //   start_side: "RIGHT",
-    //   line: 2,
-    //   side: "RIGHT",
-    //   headers: {
-    //     "X-GitHub-Api-Version": "2022-11-28",
-    //   },
-    // });
     console.log("Comment posted successfully:", response?.data);
   } catch (error) {
     console.error("Error posting comment:", error);
