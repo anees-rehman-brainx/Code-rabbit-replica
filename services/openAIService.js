@@ -1,3 +1,5 @@
+const openAIClient = require("../config/openai");
+
 const analyzeCodeWithOpenAI = async (files) => {
   const comments = [];
 
