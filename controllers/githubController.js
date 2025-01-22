@@ -8,6 +8,9 @@ const webhookHandler = async (req, res) => {
     // Parse GitHub webhook payload
     const { action, pull_request, repository, commits } = req.body;
 
+    console.log(req.body);
+    console.log("comits", commits);
+
     if (
       action === GITHUB_ACTIONS.OPENED ||
       action === GITHUB_ACTIONS.SYNCHRONIZE
