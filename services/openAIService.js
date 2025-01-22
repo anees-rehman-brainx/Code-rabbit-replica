@@ -19,7 +19,7 @@ const analyzeCodeWithOpenAI = async (files) => {
   
         ${file.content}
   
-        Provide only a summarized list of bullet points for improvement.
+        Provide only a summarized list upto two bullet points for improvement.
       `;
 
     const response = await openAIClient.chat.completions.create({
