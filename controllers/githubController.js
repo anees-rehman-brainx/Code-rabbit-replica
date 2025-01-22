@@ -6,8 +6,9 @@ const getOctokit = require("../config/octokit");
 const webhookHandler = async (req, res) => {
   try {
     // Parse GitHub webhook payload
-    const { action, pull_request, repository, after } = req.body;
+    const { action, pull_request, repository, after, before } = req.body;
 
+    console.log(req.body);
     if (
       action === GITHUB_ACTIONS.OPENED ||
       action === GITHUB_ACTIONS.SYNCHRONIZE
@@ -89,7 +90,6 @@ const postCommentOnPR = async (
         body: comment.body,
         commit_id: commitId,
         path: comment.path,
-        diff_hunk: comment.diff_hunk, // Add the diff_hunk field here
         start_line: comment.start_line,
         start_side: "RIGHT",
         line: comment.line,
