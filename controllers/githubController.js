@@ -39,17 +39,14 @@ const webhookHandler = async (req, res) => {
       );
 
       // Step 2: Analyze Files with OpenAI
-      const comments = await openAIService.analyzeCodeWithOpenAI(
-        files,
-        commitId
-      );
+      const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
       console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
         for (const comment of comments) {
-          await postCommentOnPR(owner, repo, pullNumber, comment);
+          await postCommentOnPR(owner, repo, pullNumber, comment, commitId);
         }
       }
     }
@@ -80,7 +77,8 @@ const postCommentOnPR = async (
   repoOwner,
   repoName,
   pullRequestNumber,
-  comment
+  comment,
+  commitId
 ) => {
   try {
     const octokit = await getOctokit(); // Get the octokit instance
@@ -92,7 +90,7 @@ const postCommentOnPR = async (
         repo: repoName,
         pull_number: pullRequestNumber,
         body: comment.body,
-        commit_id: comment.commit_id,
+        commit_id: commitId,
         path: comment.path,
         start_line: 1,
         start_side: "RIGHT",
