@@ -39,7 +39,7 @@ const analyzeCodeWithOpenAI = async (files) => {
       max_tokens: 500,
     });
 
-    console.log(response?.data?.choices[0]);
+    console.log(response?.data);
     console.log("-----------------------");
     comments.push({
       path: file.filename,
