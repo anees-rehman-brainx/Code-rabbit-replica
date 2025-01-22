@@ -27,6 +27,7 @@
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.2",
     "aws-sdk": "^2.1275.0",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
@@ -38,6 +39,7 @@
     "mongoose-to-swagger": "^1.4.0",
     "nodemailer": "^6.8.0",
     "octokit": "^4.1.0",
+    "openai": "^4.79.4",
     "swagger-jsdoc": "^6.2.7",
     "swagger-ui-express": "^4.6.0",
     "twilio": "^3.83.4"
