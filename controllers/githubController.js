@@ -90,7 +90,7 @@ const postCommentOnPR = async (
     });
     console.log("Comment posted successfully:", response.data);
   } catch (error) {
-    console.error("Error posting comment:", error.response.data);
+    console.error("Error posting comment:", error);
   }
 };
 module.exports = {
