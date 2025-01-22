@@ -28,17 +28,19 @@ const webhookHandler = async (req, res) => {
         pull_request.head.sha
       );
 
-      // Step 2: Analyze Files with OpenAI
-      const comments = await openAIService.analyzeCodeWithOpenAI(files);
+      console.log("files", files);
 
-      console.log("comments", comments);
+      // Step 2: Analyze Files with OpenAI
+      //   const comments = await openAIService.analyzeCodeWithOpenAI(files);
+
+      //   console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
-      if (comments && comments?.length) {
-        for (const comment of comments) {
-          await postCommentOnPR(owner, repo, pullNumber, comment);
-        }
-      }
+      //   if (comments && comments?.length) {
+      //     for (const comment of comments) {
+      //       await postCommentOnPR(owner, repo, pullNumber, comment);
+      //     }
+      //   }
     }
 
     res.status(200).send("Webhook processed");
