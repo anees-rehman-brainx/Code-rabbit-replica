@@ -8,7 +8,7 @@ const webhookHandler = async (req, res) => {
     // Parse GitHub webhook payload
     const { action, pull_request, repository } = req.body;
 
-    console.log("comits", repository?.commits);
+    console.log("comits", repository?.comits);
 
     if (
       action === GITHUB_ACTIONS.OPENED ||
@@ -17,7 +17,7 @@ const webhookHandler = async (req, res) => {
       const owner = repository.owner.login;
       const repo = repository.name;
       const pullNumber = pull_request.number;
-      const commitId = repository?.commits[0]?.id;
+      const commitId = repository?.comits[0]?.id;
 
       console.log(
         "owner: " +
