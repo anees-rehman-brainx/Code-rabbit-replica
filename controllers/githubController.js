@@ -1,17 +1,7 @@
 const { GITHUB_ACTIONS } = require("../constants");
-
 const axios = require("axios");
 const { openAIService } = require("../services");
-
-(async () => {
-  const { Octokit, App } = await import("octokit");
-
-  const octokit = new Octokit({
-    auth: process.env.GITHUB_ACCESS_TOKEN, // Your GitHub token
-  });
-
-  // Use `octokit` as usual
-})();
+const getOctokit = require("../config/octokit");
 
 const webhookHandler = async (req, res) => {
   try {
@@ -45,9 +35,9 @@ const webhookHandler = async (req, res) => {
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
-        comments.map(async (comment) => {
+        for (const comment of comments) {
           await postCommentOnPR(owner, repo, pullNumber, comment);
-        });
+        }
       }
     }
 
@@ -80,6 +70,8 @@ const postCommentOnPR = async (
   comment
 ) => {
   try {
+    const octokit = await getOctokit(); // Get the octokit instance
+
     const response = await octokit.rest.pulls.createReviewComment({
       owner: repoOwner,
       repo: repoName,
@@ -88,11 +80,12 @@ const postCommentOnPR = async (
       path: comment.path,
       position: comment.position, // Ensure this corresponds to a valid diff position
     });
-    console.log("Comment posted successfully:", response.data);
+    console.log("Comment posted successfully:", response?.data);
   } catch (error) {
     console.error("Error posting comment:", error);
   }
 };
+
 module.exports = {
   webhookHandler,
 };
