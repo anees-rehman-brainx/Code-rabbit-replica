@@ -3,6 +3,7 @@
 const { GITHUB_ACTIONS } = require("../constants");
 
 const axios = require("axios");
+const { openAIService } = require("../services");
 
 const webhookHandler = async (req, res) => {
   try {
@@ -29,10 +30,10 @@ const webhookHandler = async (req, res) => {
         pull_request.head.sha
       );
 
-      console.log("files", files);
-
       // Step 2: Analyze Files with OpenAI
-      //   const comments = await analyzeWithOpenAI(files);
+      const comments = await openAIService.analyzeCodeWithOpenAI(files);
+
+      console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
       //   await postCommentsOnPR(owner, repo, pullNumber, comments);
