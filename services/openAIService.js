@@ -28,7 +28,7 @@ const analyzeCodeWithOpenAI = async (files) => {
       `;
 
     // Call OpenAI to analyze the file
-    const response = await openAIClient.createCompletion({
+    const response = await openAIClient.chat.completions.create({
       model: "gpt-4",
       prompt: prompt.trim(),
       max_tokens: 300,
