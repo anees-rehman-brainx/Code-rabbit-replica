@@ -36,7 +36,7 @@ const webhookHandler = async (req, res) => {
       console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
-      //   await postCommentsOnPR(owner, repo, pullNumber, comments);
+      await postCommentsOnPR(owner, repo, pullNumber, comments);
     }
 
     res.status(200).send("Webhook processed");
@@ -59,6 +59,26 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha) => {
     filename: file.filename,
     content: file.patch, // Diff content
   }));
+};
+
+const postCommentsOnPR = async (owner, repo, pullNumber, comments) => {
+  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/comments`;
+
+  for (const comment of comments) {
+    await axios.post(
+      url,
+      {
+        path: comment.path,
+        position: comment.position,
+        body: comment.body,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
+        },
+      }
+    );
+  }
 };
 
 module.exports = {
