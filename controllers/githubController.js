@@ -6,12 +6,9 @@ const getOctokit = require("../config/octokit");
 const webhookHandler = async (req, res) => {
   try {
     // Parse GitHub webhook payload
-    const { action, pull_request, repository } = req.body;
+    const { action, pull_request, repository, after } = req.body;
 
-    console.log(req.body);
-
-    console.log("comits", repository.commits[0]?.id);
-    return;
+    console.log("comits", after);
 
     if (
       action === GITHUB_ACTIONS.OPENED ||
@@ -20,7 +17,7 @@ const webhookHandler = async (req, res) => {
       const owner = repository.owner.login;
       const repo = repository.name;
       const pullNumber = pull_request.number;
-      const commitId = pull_request.merge_commit_sha;
+      const commitId = after;
 
       console.log(
         "owner: " +
