@@ -8,6 +8,8 @@ const webhookHandler = async (req, res) => {
     // Parse GitHub webhook payload
     const { action, pull_request, repository } = req.body;
 
+    console.log("body", req.body);
+
     if (
       action === GITHUB_ACTIONS.OPENED ||
       action === GITHUB_ACTIONS.SYNCHRONIZE
@@ -27,8 +29,6 @@ const webhookHandler = async (req, res) => {
         pullNumber,
         pull_request.head.sha
       );
-
-      console.log("files", files);
 
       // Step 2: Analyze Files with OpenAI
       //   const comments = await openAIService.analyzeCodeWithOpenAI(files);
