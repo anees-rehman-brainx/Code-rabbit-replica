@@ -40,8 +40,6 @@ const analyzeCodeWithOpenAI = async (files) => {
     });
   }
 
-  console.log("comments: ", comments);
-
   return comments;
 };
 module.exports = {

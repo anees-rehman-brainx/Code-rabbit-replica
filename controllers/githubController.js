@@ -1,9 +1,17 @@
-// const { Octokit, App } = require("octokit");
-
 const { GITHUB_ACTIONS } = require("../constants");
 
 const axios = require("axios");
 const { openAIService } = require("../services");
+
+(async () => {
+  const { Octokit, App } = await import("octokit");
+
+  const octokit = new Octokit({
+    auth: process.env.GITHUB_ACCESS_TOKEN, // Your GitHub token
+  });
+
+  // Use `octokit` as usual
+})();
 
 const webhookHandler = async (req, res) => {
   try {
@@ -36,7 +44,11 @@ const webhookHandler = async (req, res) => {
       console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
-      await postCommentsOnPR(owner, repo, pullNumber, comments);
+      if (comments && comments?.length) {
+        comments.map(async (comment) => {
+          await postCommentOnPR(owner, repo, pullNumber, comment);
+        });
+      }
     }
 
     res.status(200).send("Webhook processed");
@@ -61,26 +73,26 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha) => {
   }));
 };
 
-const postCommentsOnPR = async (owner, repo, pullNumber, comments) => {
-  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/comments`;
-
-  for (const comment of comments) {
-    await axios.post(
-      url,
-      {
-        path: comment.path,
-        position: comment.position,
-        body: comment.body,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
-        },
-      }
-    );
+const postCommentOnPR = async (
+  repoOwner,
+  repoName,
+  pullRequestNumber,
+  comment
+) => {
+  try {
+    const response = await octokit.rest.pulls.createReviewComment({
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber,
+      body: comment.body,
+      path: comment.path,
+      position: comment.position, // Ensure this corresponds to a valid diff position
+    });
+    console.log("Comment posted successfully:", response.data);
+  } catch (error) {
+    console.error("Error posting comment:", error.response.data);
   }
 };
-
 module.exports = {
   webhookHandler,
 };
