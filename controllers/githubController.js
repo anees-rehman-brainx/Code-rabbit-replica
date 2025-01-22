@@ -10,9 +10,8 @@ const webhookHandler = async (req, res) => {
 
     console.log(req.body);
 
+    console.log("comits", repository.commits[0]?.id);
     return;
-
-    console.log("comits", pull_request.merge_commit_sha);
 
     if (
       action === GITHUB_ACTIONS.OPENED ||
