@@ -9,7 +9,9 @@ const analyzeCodeWithOpenAI = async (files) => {
     comment: z.string(),
   });
 
-  const ReviewComments = z.array(Comment);
+  const ReviewCommentsSchema = z.object({
+    review_comments: z.array(Comment),
+  });
 
   const comments = [];
 
@@ -19,26 +21,25 @@ const analyzeCodeWithOpenAI = async (files) => {
       
       1. For each suggestion, specify the line number and the comment.
       2. Avoid multiple comments for the same line.
-      2. comments should be concise and well summarized.
-      3. Limit the response to a maximum of 5 comments per file.
-      4. Return the result in the following JSON format:
-      [
-        {
-          "filename": "<filename>",
-          "line": <line_number>,
-          "comment": "<comment>"
-        },
-        ...
-      ]
+      3. Comments should be concise and well-summarized.
+      4. Limit the response to a maximum of 5 comments per file.
+      5. Return the result in the following JSON format:
+      {
+        "review_comments": [
+          {
+            "filename": "<filename>",
+            "line": <line_number>,
+            "comment": "<comment>"
+          },
+          ...
+        ]
+      }
       
-
-      Points to check in review:
+      Points to check in the review:
       1. Remove unnecessary console logs and commented-out code.
       2. Ensure adherence to the Single Responsibility Principle (SRP).
       3. Improve code readability, naming conventions, and consistency.
       4. Suggest optimizations and identify redundancies.
-  
-      
       
       Here is the code:
       
@@ -58,12 +59,17 @@ const analyzeCodeWithOpenAI = async (files) => {
           },
           { role: "user", content: prompt.trim() },
         ],
-        response_format: zodResponseFormat(ReviewComments, "review_comments"),
+        response_format: zodResponseFormat(
+          ReviewCommentsSchema,
+          "review_comments"
+        ),
       });
 
-      const parsedComments = completion.choices[0].message.parsed;
+      // Extract and add the parsed comments to the list
+      const parsedComments =
+        completion.choices[0].message.parsed.review_comments;
 
-      console.log("parsed comments: ", parsedComments);
+      console.log("Parsed comments:", parsedComments);
       comments.push(...parsedComments);
     } catch (error) {
       console.error("Error parsing OpenAI response:", error.message);
