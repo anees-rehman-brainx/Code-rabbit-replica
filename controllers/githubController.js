@@ -75,12 +75,14 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
     if (isCommit) {
       return response.data.files.map((file) => ({
         filename: file.filename,
-        content: parseDiff(file.patch) || "", // Diff content (if available)
+        content: file.patch || "", // Diff content (if available)
+        changes: parseDiff(file.patch),
       }));
     } else {
       return response.data.map((file) => ({
         filename: file.filename,
-        content: parseDiff(file.patch) || "", // Diff content (if available)
+        content: file.patch || "", // Diff content (if available)
+        changes: parseDiff(file.patch),
       }));
     }
   } catch (error) {
@@ -138,12 +140,10 @@ const parseDiff = (patch) => {
       }
     } else if (line.startsWith("+") && !line.startsWith("+++")) {
       if (currentLine !== null) {
-        changes.push({ line: currentLine, content: line.substring(1).trim() });
+        changes.push(currentLine);
         currentLine++;
       }
     } else if (line.startsWith("-") && !line.startsWith("---")) {
-      // Capture removed lines if needed (optional)
-      // You can handle deletions similarly if required
     }
   });
 
