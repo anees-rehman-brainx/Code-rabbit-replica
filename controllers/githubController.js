@@ -32,7 +32,8 @@ const webhookHandler = async (req, res) => {
         owner,
         repo,
         pullNumber,
-        pull_request.head.sha
+        pull_request.head.sha,
+        commitId ? true : false
       );
 
       return;
@@ -55,21 +56,43 @@ const webhookHandler = async (req, res) => {
   }
 };
 
-const fetchPRFiles = async (owner, repo, pullNumber, sha) => {
-  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
+const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
+  try {
+    let url;
+    if (isCommit) {
+      console.log("in commit");
+      // Fetch files for a specific commit
+      url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
+    } else {
+      // Fetch all files for the pull request
+      url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
+    }
 
-  const response = await axios.get(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
-    },
-  });
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
+      },
+    });
 
-  console.log("files", response?.data);
-
-  return response.data.map((file) => ({
-    filename: file.filename,
-    content: file.patch, // Diff content
-  }));
+    if (isCommit) {
+      // Process files for a specific commit
+      console.log("Commit files:", response?.data?.files);
+      return response.data.files.map((file) => ({
+        filename: file.filename,
+        content: file.patch || "", // Diff content (if available)
+      }));
+    } else {
+      // Process files for the pull request
+      console.log("Pull request files:", response?.data);
+      return response.data.map((file) => ({
+        filename: file.filename,
+        content: file.patch || "", // Diff content (if available)
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching PR or commit files:", error.message);
+    throw error;
+  }
 };
 
 const postCommentOnPR = async (
