@@ -76,7 +76,22 @@ const analyzeCodeWithOpenAI = async (files) => {
     }
   }
 
-  return comments;
+  const mergedComments = comments.reduce((acc, curr) => {
+    const existingComment = acc.find(
+      (comment) =>
+        comment.filename === curr.filename && comment.line === curr.line
+    );
+
+    if (existingComment) {
+      existingComment.comment += `; ${curr.comment}`;
+    } else {
+      acc.push(curr);
+    }
+
+    return acc;
+  }, []);
+
+  return mergedComments;
 };
 
 module.exports = {
