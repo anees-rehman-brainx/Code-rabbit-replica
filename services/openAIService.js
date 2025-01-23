@@ -20,7 +20,7 @@ const analyzeCodeWithOpenAI = async (files) => {
       You are a code reviewer. Your task is to review the following file and provide concise actionable comments. Follow these rules:
       
       1. For each suggestion, specify the line number and the comment.
-      2. Avoid multiple comments for the same line.
+      2. If there are multiple suggestions for the same line, merge them into a single comment separated by semicolons (;).
       3. Comments should be concise and well-summarized.
       4. Limit the response to a maximum of 5 comments per file.
       5. Return the result in the following JSON format:
@@ -69,29 +69,13 @@ const analyzeCodeWithOpenAI = async (files) => {
       const parsedComments =
         completion.choices[0].message.parsed.review_comments;
 
-      console.log("Parsed comments:", parsedComments);
       comments.push(...parsedComments);
     } catch (error) {
       console.error("Error parsing OpenAI response:", error.message);
     }
   }
 
-  const mergedComments = comments.reduce((acc, curr) => {
-    const existingComment = acc.find(
-      (comment) =>
-        comment.filename === curr.filename && comment.line === curr.line
-    );
-
-    if (existingComment) {
-      existingComment.comment += `; ${curr.comment}`;
-    } else {
-      acc.push(curr);
-    }
-
-    return acc;
-  }, []);
-
-  return mergedComments;
+  return comments;
 };
 
 module.exports = {
