@@ -36,10 +36,11 @@ const webhookHandler = async (req, res) => {
         commitId ? true : false
       );
 
-      return;
-
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
+
+      console.log(comments);
+      return;
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
@@ -58,15 +59,9 @@ const webhookHandler = async (req, res) => {
 
 const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
   try {
-    let url;
-    if (isCommit) {
-      console.log("in commit");
-      // Fetch files for a specific commit
-      url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
-    } else {
-      // Fetch all files for the pull request
-      url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
-    }
+    let url = isCommit
+      ? `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`
+      : `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
 
     const response = await axios.get(url, {
       headers: {
@@ -75,15 +70,11 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
     });
 
     if (isCommit) {
-      // Process files for a specific commit
-      console.log("Commit files:", response?.data?.files);
       return response.data.files.map((file) => ({
         filename: file.filename,
         content: file.patch || "", // Diff content (if available)
       }));
     } else {
-      // Process files for the pull request
-      console.log("Pull request files:", response?.data);
       return response.data.map((file) => ({
         filename: file.filename,
         content: file.patch || "", // Diff content (if available)
