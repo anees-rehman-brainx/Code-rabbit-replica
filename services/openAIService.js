@@ -1,6 +1,6 @@
 const openAIClient = require("../config/openai");
-import { z } from "zod";
-import { zodResponseFormat } from "openai/helpers/zod";
+const { z } = require("zod");
+const { zodResponseFormat } = require("openai/helpers/zod");
 
 const analyzeCodeWithOpenAI = async (files) => {
   const Comment = z.object({
@@ -49,7 +49,7 @@ const analyzeCodeWithOpenAI = async (files) => {
 
     try {
       // Generate the completion with structured response
-      const completion = await openai.beta.chat.completions.parse({
+      const completion = await openAIClient.beta.chat.completions.parse({
         model: "gpt-4o-2024-08-06",
         messages: [
           {
@@ -72,8 +72,6 @@ const analyzeCodeWithOpenAI = async (files) => {
 
   return comments;
 };
-
-export default analyzeCodeWithOpenAI;
 
 module.exports = {
   analyzeCodeWithOpenAI,
