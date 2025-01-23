@@ -5,7 +5,7 @@ const { zodResponseFormat } = require("openai/helpers/zod");
 const analyzeCodeWithOpenAI = async (files) => {
   const Comment = z.object({
     filename: z.string(),
-    line: z.number().positive(),
+    line: z.number().min(1),
     comment: z.string(),
   });
 
