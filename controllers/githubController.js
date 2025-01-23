@@ -35,6 +35,9 @@ const webhookHandler = async (req, res) => {
         pull_request.head.sha,
         commitId ? true : false
       );
+
+      console.log("files", files);
+
       return;
 
       // Step 2: Analyze Files with OpenAI
@@ -69,23 +72,48 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
       },
     });
 
-    console.log("files", response?.data);
-
     if (isCommit) {
       return response.data.files.map((file) => ({
         filename: file.filename,
-        content: file.patch || "", // Diff content (if available)
+        content: parseDiff(file.patch) || "", // Diff content (if available)
       }));
     } else {
       return response.data.map((file) => ({
         filename: file.filename,
-        content: file.patch || "", // Diff content (if available)
+        content: parseDiff(file.patch) || "", // Diff content (if available)
       }));
     }
   } catch (error) {
     console.error("Error fetching PR or commit files:", error.message);
     throw error;
   }
+};
+
+const parseDiff = (patch) => {
+  const changes = [];
+  const lines = patch.split("\n");
+  let currentLine = null;
+
+  lines.forEach((line) => {
+    if (line.startsWith("@@")) {
+      // Extract line numbers from diff hunk headers, e.g., @@ -1,3 +2,4 @@
+      const match = line.match(/\+(\d+)(,\d+)?/);
+      if (match) {
+        currentLine = parseInt(match[1], 10);
+      }
+    } else if (line.startsWith("+") && !line.startsWith("+++")) {
+      // Capture added lines (excluding the diff header lines)
+      if (currentLine !== null) {
+        changes.push({ line: currentLine, content: line.substring(1).trim() });
+        currentLine++;
+      }
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      // Capture removed lines if needed (optional)
+      // You can handle deletions similarly if required
+    }
+  });
+
+  return changes;
 };
 
 const postCommentOnPR = async (
