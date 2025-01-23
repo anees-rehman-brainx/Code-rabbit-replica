@@ -36,7 +36,7 @@ const webhookHandler = async (req, res) => {
         commitId ? true : false
       );
 
-      console.log("files", files);
+      console.log("files", JSON.stringify(files));
 
       return;
 
@@ -89,33 +89,6 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
   }
 };
 
-const parseDiff = (patch) => {
-  const changes = [];
-  const lines = patch.split("\n");
-  let currentLine = null;
-
-  lines.forEach((line) => {
-    if (line.startsWith("@@")) {
-      // Extract line numbers from diff hunk headers, e.g., @@ -1,3 +2,4 @@
-      const match = line.match(/\+(\d+)(,\d+)?/);
-      if (match) {
-        currentLine = parseInt(match[1], 10);
-      }
-    } else if (line.startsWith("+") && !line.startsWith("+++")) {
-      // Capture added lines (excluding the diff header lines)
-      if (currentLine !== null) {
-        changes.push({ line: currentLine, content: line.substring(1).trim() });
-        currentLine++;
-      }
-    } else if (line.startsWith("-") && !line.startsWith("---")) {
-      // Capture removed lines if needed (optional)
-      // You can handle deletions similarly if required
-    }
-  });
-
-  return changes;
-};
-
 const postCommentOnPR = async (
   repoOwner,
   repoName,
@@ -150,6 +123,31 @@ const postCommentOnPR = async (
   } catch (error) {
     console.error("Error posting comment:", error);
   }
+};
+
+const parseDiff = (patch) => {
+  const changes = [];
+  const lines = patch.split("\n");
+  let currentLine = null;
+
+  lines.forEach((line) => {
+    if (line.startsWith("@@")) {
+      const match = line.match(/\+(\d+)(,\d+)?/);
+      if (match) {
+        currentLine = parseInt(match[1], 10);
+      }
+    } else if (line.startsWith("+") && !line.startsWith("+++")) {
+      if (currentLine !== null) {
+        changes.push({ line: currentLine, content: line.substring(1).trim() });
+        currentLine++;
+      }
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      // Capture removed lines if needed (optional)
+      // You can handle deletions similarly if required
+    }
+  });
+
+  return changes;
 };
 
 module.exports = {
