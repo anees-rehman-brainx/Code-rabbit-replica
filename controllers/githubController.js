@@ -35,6 +35,8 @@ const webhookHandler = async (req, res) => {
         pull_request.head.sha
       );
 
+      return;
+
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
@@ -62,6 +64,8 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha) => {
     },
   });
 
+  console.log("files", response?.data);
+
   return response.data.map((file) => ({
     filename: file.filename,
     content: file.patch, // Diff content
@@ -78,7 +82,7 @@ const postCommentOnPR = async (
   try {
     const octokit = await getOctokit(); // Get the octokit instance
 
-    console.log("comment", comment);
+    // console.log("comment", comment);
     const response = await octokit.request(
       `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
       {
@@ -98,7 +102,6 @@ const postCommentOnPR = async (
       }
     );
 
-    console.log("---------------------------------");
     console.log("Comment posted successfully:", response);
   } catch (error) {
     console.error("Error posting comment:", error);
