@@ -35,12 +35,12 @@ const webhookHandler = async (req, res) => {
         pull_request.head.sha,
         commitId ? true : false
       );
+      return;
 
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
       console.log(comments);
-      return;
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
@@ -68,6 +68,8 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
         Authorization: `Bearer ${process.env.GITHUB_ACCESS_TOKEN}`,
       },
     });
+
+    console.log("files", response?.data);
 
     if (isCommit) {
       return response.data.files.map((file) => ({
