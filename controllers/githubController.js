@@ -99,24 +99,27 @@ const postCommentOnPR = async (
   try {
     const octokit = await getOctokit(); // Get the octokit instance
 
-    // console.log("comment", comment);
+    const payload = {
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber,
+      body: comment.body,
+      path: comment.path,
+    };
+
+    // If commitId is present, include it with position
+    if (commitId) {
+      payload.commit_id = commitId;
+      payload.position = comment.line; // Ensure position is calculated
+    } else {
+      // Otherwise, use line for general comments
+      payload.line = comment.line;
+      payload.side = "RIGHT"; // Default side
+    }
+
     const response = await octokit.request(
       `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
-      {
-        owner: repoOwner,
-        repo: repoName,
-        pull_number: pullRequestNumber,
-        body: comment.body,
-        commit_id: commitId,
-        path: comment.path,
-        start_line: comment.start_line,
-        start_side: "RIGHT",
-        line: comment.line,
-        side: "RIGHT",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      }
+      payload
     );
 
     console.log("Comment posted successfully:", response);
