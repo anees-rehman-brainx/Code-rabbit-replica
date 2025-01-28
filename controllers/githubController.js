@@ -23,7 +23,7 @@ const webhookHandler = async (req, res) => {
       // Step 1: Fetch PR or Commit Files
       const files = await fetchPRFiles(owner, repo, pullNumber, commitId);
 
-      console.log("Fetched files:", JSON.stringify(files));
+      console.log("Fetched:", JSON.stringify(files));
 
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
