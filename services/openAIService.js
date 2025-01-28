@@ -30,8 +30,7 @@ const analyzeCodeWithOpenAI = async (files) => {
             "filename": "<filename>",
             "line": <line_number>,
             "comment": "<comment>"
-          },
-          ...
+          }
         ]
       }
       
@@ -41,15 +40,13 @@ const analyzeCodeWithOpenAI = async (files) => {
       3. Improve code readability, naming conventions, and consistency.
       4. Suggest optimizations and identify redundancies.
       
-      Here is the code:
-      
       File: ${file.filename}
-      
+      Changes: ${JSON.stringify(file.changes, null, 2)}
+      Code:
       ${file.content}
     `;
 
     try {
-      // Generate the completion with structured response
       const completion = await openAIClient.beta.chat.completions.parse({
         model: "gpt-4o-2024-08-06",
         messages: [
@@ -65,7 +62,6 @@ const analyzeCodeWithOpenAI = async (files) => {
         ),
       });
 
-      // Extract and add the parsed comments to the list
       const parsedComments =
         completion.choices[0].message.parsed.review_comments;
 

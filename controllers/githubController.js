@@ -5,8 +5,8 @@ const getOctokit = require("../config/octokit");
 
 const webhookHandler = async (req, res) => {
   try {
-    // Parse GitHub webhook payload
-    const { action, pull_request, repository, after, before } = req.body;
+    const { action, pull_request, repository, after } = req.body;
+
     if (
       action === GITHUB_ACTIONS.OPENED ||
       action === GITHUB_ACTIONS.SYNCHRONIZE
@@ -17,51 +17,38 @@ const webhookHandler = async (req, res) => {
       const commitId = after;
 
       console.log(
-        "owner: " +
-          owner +
-          "  repo: " +
-          repo +
-          "   pullNumber: " +
-          pullNumber +
-          "    commit: " +
-          commitId
+        `owner: ${owner}, repo: ${repo}, pullNumber: ${pullNumber}, commit: ${commitId}`
       );
 
-      // Step 1: Fetch PR Files
-      const files = await fetchPRFiles(
-        owner,
-        repo,
-        pullNumber,
-        pull_request.head.sha,
-        commitId ? true : false
-      );
+      // Step 1: Fetch PR or Commit Files
+      const files = await fetchPRFiles(owner, repo, pullNumber, commitId);
 
-      console.log("files", JSON.stringify(files));
+      console.log("Fetched files:", JSON.stringify(files));
 
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
-      console.log(comments);
+      console.log("Comments generated:", comments);
 
       // Step 3: Post Comments on GitHub PR
-      if (comments && comments?.length) {
+      if (comments && comments.length) {
         for (const comment of comments) {
           await postCommentOnPR(owner, repo, pullNumber, comment, commitId);
         }
       }
     }
 
-    res.status(200).send("Webhook processed");
+    res.status(200).send("Webhook processed successfully");
   } catch (error) {
     console.error("Error in webhookHandler:", error.message);
     res.status(500).send("Internal Server Error");
   }
 };
 
-const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
+const fetchPRFiles = async (owner, repo, pullNumber, commitId) => {
   try {
-    let url = isCommit
-      ? `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`
+    const url = commitId
+      ? `https://api.github.com/repos/${owner}/${repo}/commits/${commitId}`
       : `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
 
     const response = await axios.get(url, {
@@ -70,61 +57,23 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
       },
     });
 
-    if (isCommit) {
-      return response.data.files.map((file) => ({
-        filename: file.filename,
-        content: file.patch || "", // Diff content (if available)
-        // changes: parseDiff(file.patch),
-      }));
-    } else {
-      return response.data.map((file) => ({
-        filename: file.filename,
-        content: file.patch || "", // Diff content (if available)
-        // changes: parseDiff(file.patch),
-      }));
-    }
+    // Use parseDiff to process patches
+    const files = commitId
+      ? response.data.files.map((file) => ({
+          filename: file.filename,
+          content: file.patch || "",
+          changes: parseDiff(file.patch || ""), // Parse changes for commits
+        }))
+      : response.data.map((file) => ({
+          filename: file.filename,
+          content: file.patch || "",
+          changes: parseDiff(file.patch || ""), // Parse changes for PR files
+        }));
+
+    return files;
   } catch (error) {
     console.error("Error fetching PR or commit files:", error.message);
     throw error;
-  }
-};
-
-const postCommentOnPR = async (
-  repoOwner,
-  repoName,
-  pullRequestNumber,
-  comment,
-  commitId
-) => {
-  try {
-    const octokit = await getOctokit(); // Get the octokit instance
-
-    const payload = {
-      owner: repoOwner,
-      repo: repoName,
-      pull_number: pullRequestNumber,
-      body: comment.body,
-      path: comment.path,
-    };
-
-    // If commitId is present, include it with position
-    if (commitId) {
-      payload.commit_id = commitId;
-      payload.position = comment.line; // Ensure position is calculated
-    } else {
-      // Otherwise, use line for general comments
-      payload.line = comment.line;
-      payload.side = "RIGHT"; // Default side
-    }
-
-    const response = await octokit.request(
-      `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
-      payload
-    );
-
-    console.log("Comment posted successfully:", response);
-  } catch (error) {
-    console.error("Error posting comment:", error);
   }
 };
 
@@ -144,11 +93,48 @@ const parseDiff = (patch) => {
         changes.push(currentLine);
         currentLine++;
       }
-    } else if (line.startsWith("-") && !line.startsWith("---")) {
     }
   });
 
   return changes;
+};
+
+const postCommentOnPR = async (
+  repoOwner,
+  repoName,
+  pullRequestNumber,
+  comment,
+  commitId
+) => {
+  try {
+    const octokit = await getOctokit();
+
+    const payload = {
+      owner: repoOwner,
+      repo: repoName,
+      pull_number: pullRequestNumber,
+      body: comment.comment,
+      path: comment.filename,
+    };
+
+    // Include commit ID and position if available
+    if (commitId) {
+      payload.commit_id = commitId;
+      payload.position = comment.line; // Ensure position is calculated
+    } else {
+      payload.line = comment.line;
+      payload.side = "RIGHT"; // Default to right side
+    }
+
+    const response = await octokit.request(
+      `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
+      payload
+    );
+
+    console.log("Comment posted successfully:", response.data);
+  } catch (error) {
+    console.error("Error posting comment:", error.message);
+  }
 };
 
 module.exports = {
