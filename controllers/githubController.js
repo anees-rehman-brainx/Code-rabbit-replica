@@ -38,8 +38,6 @@ const webhookHandler = async (req, res) => {
 
       console.log("files", JSON.stringify(files));
 
-      return;
-
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
@@ -76,13 +74,13 @@ const fetchPRFiles = async (owner, repo, pullNumber, sha, isCommit = false) => {
       return response.data.files.map((file) => ({
         filename: file.filename,
         content: file.patch || "", // Diff content (if available)
-        changes: parseDiff(file.patch),
+        // changes: parseDiff(file.patch),
       }));
     } else {
       return response.data.map((file) => ({
         filename: file.filename,
         content: file.patch || "", // Diff content (if available)
-        changes: parseDiff(file.patch),
+        // changes: parseDiff(file.patch),
       }));
     }
   } catch (error) {
