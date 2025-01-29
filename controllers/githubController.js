@@ -111,7 +111,7 @@ const postCommentOnPR = async (
         path: comment.path,
         start_line: comment.start_line,
         start_side: "RIGHT",
-        line: comment.line,
+        line: 2,
         side: "RIGHT",
         headers: {
           "X-GitHub-Api-Version": "2022-11-28",
