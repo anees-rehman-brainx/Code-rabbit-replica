@@ -36,12 +36,12 @@ const webhookHandler = async (req, res) => {
         commitId ? true : false
       );
 
-      console.log("files", JSON.stringify(files));
+      // console.log("files", JSON.stringify(files));
 
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
-      console.log(comments);
+      console.log("comments", comments);
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {
