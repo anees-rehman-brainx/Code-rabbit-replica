@@ -97,29 +97,25 @@ const postCommentOnPR = async (
   commitId
 ) => {
   try {
-    const octokit = await getOctokit(); // Get the octokit instance
+    const octokit = await getOctokit();
 
-    // console.log("comment", comment);
     const response = await octokit.request(
-      `POST /repos/{owner}/{repo}/pulls/{pull_number}/comments`,
+      "POST /repos/{owner}/{repo}/pulls/{pull_number}/comments",
       {
         owner: repoOwner,
         repo: repoName,
         pull_number: pullRequestNumber,
-        body: comment.body,
+        body: comment.comment,
         commit_id: commitId,
-        path: comment.path,
-        start_line: comment.start_line,
-        start_side: "RIGHT",
-        line: 2,
-        side: "RIGHT",
+        path: comment.filename,
+        position: comment.line,
         headers: {
           "X-GitHub-Api-Version": "2022-11-28",
         },
       }
     );
 
-    console.log("Comment posted successfully:", response);
+    console.log("Comment posted successfully:", response.data.html_url);
   } catch (error) {
     console.error("Error posting comment:", error);
   }
