@@ -41,7 +41,7 @@ const webhookHandler = async (req, res) => {
       // Step 2: Analyze Files with OpenAI
       const comments = await openAIService.analyzeCodeWithOpenAI(files);
 
-      console.log("comments", comments);
+      console.log(comments);
 
       // Step 3: Post Comments on GitHub PR
       if (comments && comments?.length) {

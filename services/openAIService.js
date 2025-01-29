@@ -9,6 +9,8 @@ const analyzeCodeWithOpenAI = async (files) => {
     comment: z.string(),
   });
 
+  console.log("files", files?.length);
+
   const ReviewCommentsSchema = z.object({
     review_comments: z.array(Comment),
   });
